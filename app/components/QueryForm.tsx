@@ -1,6 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+
 
 export default function QueryForm() {
   const [query, setQuery] = useState('');
@@ -15,7 +19,7 @@ export default function QueryForm() {
     setResult([]);
 
     try {
-      const response = await fetch('/api/query', {
+      const response = await fetch('http://localhost:3000/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -34,49 +38,49 @@ export default function QueryForm() {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-lg p-4 bg-white shadow-md rounded-lg">
-        <textarea
-          className="w-full p-2 border rounded"
-          rows={4}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter SQL Query (e.g., SELECT * FROM users)"
-        />
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 mt-2 rounded hover:bg-blue-700 transition"
-          disabled={loading}
-        >
-          {loading ? 'Running...' : 'Submit Query'}
-        </button>
-      </form>
+      <div className="flex flex-col items-center w-full max-w-2xl">
+        <Card className="p-4 w-full">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Textarea
+                className="w-full"
+                rows={4}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Enter SQL Query (SELECT only)"
+            />
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Running...' : 'Submit Query'}
+            </Button>
+          </form>
+        </Card>
 
-      {error && <p className="mt-4 text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-red-500">{error}</p>}
 
-      {result && (
-        <div className="mt-6 w-full max-w-2xl bg-white p-4 shadow-md rounded-lg">
-          <h2 className="text-xl font-semibold mb-2">Query Results</h2>
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-200">
-                {Object.keys(result[0] || {}).map((key) => (
-                  <th key={key} className="border p-2">{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {result.map((row: any, index: number) => (
-                <tr key={index} className="border">
-                  {Object.values(row).map((value, i) => (
-                    <td key={i} className="border p-2">{value as React.ReactNode}</td>
+        {result.length > 0 && (
+            <Card className="mt-6 w-full">
+              <h2 className="text-lg font-semibold mb-2">Query Results</h2>
+              <div className="overflow-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                  <tr className="bg-gray-200">
+                    {Object.keys(result[0]).map((key) => (
+                        <th key={key} className="border p-2">{key}</th>
+                    ))}
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {result.map((row, index) => (
+                      <tr key={index} className="border">
+                        {Object.values(row).map((value, i) => (
+                            <td key={i} className="border p-2">{value as React.ReactNode}</td>
+                        ))}
+                      </tr>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+        )}
+      </div>
   );
 }
